@@ -1,83 +1,115 @@
-from dataclasses import dataclass, field
+from courses import (
+    add_course,
+    calculate_progress,
+    filter_courses_by_progress,
+    find_courses,
+    find_theme,
+    mark_theme_completed,
+    sort_courses_by_progress,
+)
+from storage import load_courses, save_courses
+from utils import input_int, input_nonempty, input_theme_list
+
+DATA_FILE = "data/courses.json"
+
+MENU = """
+Трекер прогресса обучения
+1. Показать курсы
+2. Добавить курс
+3. Посмотреть тему
+4. Отметить тему пройденной
+5. Найти курс по названию
+6. Курсы с прогрессом не менее X%
+7. Курсы, отсортированные по прогрессу
+0. Выход
+"""
 
 
-@dataclass
-class Theme:
-    name: str
-    is_completed: bool = False
+def show_courses(courses: dict[int, dict]) -> None:
+    if not courses:
+        print("Курсов пока нет.")
+        return
+
+    for course_id, course in courses.items():
+        progress = calculate_progress(course)
+        print(f"{course_id}. {course['name']} — {progress:.0f}%")
 
 
-@dataclass
-class Course:
-    name: str
-    themes: list[Theme] = field(default_factory=list)
+def show_theme(course: dict, theme_name: str) -> None:
+    theme = find_theme(course, theme_name)
+    if theme is None:
+        print(f"Тема '{theme_name}' не найдена в курсе '{course['name']}'.")
+        return
+
+    status = "пройдена" if theme["is_completed"] else "не пройдена"
+    print(f"Курс: {course['name']}")
+    print(f"Тема: {theme['name']}")
+    print(f"Статус: {status}")
 
 
-def mark_as_completed(theme: Theme) -> None:
-    theme.is_completed = True
+def get_course(courses: dict[int, dict], course_id: int) -> dict | None:
+    return courses.get(course_id)
 
 
-def add_course(courses: list[Course], name: str, theme_names: list[str]) -> Course:
-    course = Course(
-        name=name,
-        themes=[Theme(theme_name) for theme_name in theme_names]
-    )
-    courses.append(course)
-    
-    return course
+def main() -> None:
+    courses = load_courses(DATA_FILE)
 
+    while True:
+        print(MENU)
+        choice = input("Выберите действие: ")
 
-def view_theme(course: Course, theme_name: str) -> None:
-    for theme in course.themes:
-        if theme.name == theme_name:
-            status = "пройдена" if theme.is_completed else "не пройдена"
-            print(f"Курс: {course.name}")
-            print(f"Тема: {theme.name}")
-            print(f"Статус: {status}")
-
-            return
-
-    print(f"Тема '{theme_name}' не найдена в курсе '{course.name}'")
-
-
-def mark_theme_completed(course: Course, theme_name: str) -> None:
-    for theme in course.themes:
-        if theme.name == theme_name:
-            mark_as_completed(theme)
-            print(f"Тема '{theme.name}' отмечена как пройденная.")
-
-            return
-
-    print(f"Тема '{theme_name}' не найдена в курсе '{course.name}'")
-
-
-def view_progress(course: Course) -> None:
-    total = len(course.themes)
-    completed = sum(theme.is_completed for theme in course.themes)
-    percent = completed / total * 100 if total else 0
-
-    print(f"Прогресс по курсу '{course.name}': {completed}/{total} ({percent:.0f}%)")
-
-
-def main():
-    courses: list[Course] = []
-
-    course = add_course(
-        courses,
-        "Разработка на Python",
-        [
-            "Переменные",
-            "Условные операторы",
-            "Циклы",
-            "Функции",
-            "Списки и словари"
-        ]
-    )
-
-    view_theme(course, "Циклы")
-    mark_theme_completed(course, "Переменные")
-    view_theme(course, "Переменные")
-    view_progress(course)
+        if choice == "1":
+            show_courses(courses)
+        elif choice == "2":
+            name = input_nonempty("Название курса: ")
+            theme_names = input_theme_list("Темы курса через запятую: ")
+            add_course(courses, name, theme_names)
+            print("Курс добавлен.")
+        elif choice == "3":
+            course_id = input_int("Идентификатор курса: ")
+            course = get_course(courses, course_id)
+            if course is None:
+                print("Курс не найден.")
+                continue
+            theme_name = input_nonempty("Название темы: ")
+            show_theme(course, theme_name)
+        elif choice == "4":
+            course_id = input_int("Идентификатор курса: ")
+            course = get_course(courses, course_id)
+            if course is None:
+                print("Курс не найден.")
+                continue
+            theme_name = input_nonempty("Название темы: ")
+            if mark_theme_completed(course, theme_name):
+                print(f"Тема '{theme_name}' отмечена как пройденная.")
+            else:
+                print(f"Тема '{theme_name}' не найдена.")
+        elif choice == "5":
+            query = input_nonempty("Подстрока для поиска: ")
+            found = list(find_courses(courses, query))
+            if not found:
+                print("Ничего не найдено.")
+            for course_id, course in found:
+                print(f"{course_id}. {course['name']}")
+        elif choice == "6":
+            min_percent = input_int("Минимальный процент прогресса: ")
+            found = list(filter_courses_by_progress(courses, min_percent))
+            if not found:
+                print("Подходящих курсов нет.")
+            for course_id, course in found:
+                progress = calculate_progress(course)
+                print(f"{course_id}. {course['name']} — {progress:.0f}%")
+        elif choice == "7":
+            sorted_courses = sort_courses_by_progress(courses, reverse=True)
+            for course_id, course in sorted_courses:
+                progress = calculate_progress(course)
+                print(f"{course_id}. {course['name']} — {progress:.0f}%")
+        elif choice == "0":
+            save_courses(DATA_FILE, courses)
+            print("Данные сохранены. До встречи!")
+            break
+        else:
+            print("Неизвестный пункт меню.")
 
 
 if __name__ == "__main__":
