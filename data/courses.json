@@ -2,47 +2,20 @@
   "1": {
     "name": "Разработка на Python",
     "themes": [
-      {
-        "name": "Переменные",
-        "is_completed": true
-      },
-      {
-        "name": "Условные операторы",
-        "is_completed": false
-      },
-      {
-        "name": "Циклы",
-        "is_completed": false
-      },
-      {
-        "name": "Функции",
-        "is_completed": false
-      },
-      {
-        "name": "Списки и словари",
-        "is_completed": false
-      }
+      {"name": "Переменные", "is_completed": false},
+      {"name": "Условные операторы", "is_completed": false},
+      {"name": "Циклы", "is_completed": false},
+      {"name": "Функции", "is_completed": false},
+      {"name": "Списки и словари", "is_completed": false}
     ]
   },
   "2": {
-    "name": "Разработка на go",
+    "name": "Разработка на Go",
     "themes": [
-      {
-        "name": "Основы",
-        "is_completed": false
-      },
-      {
-        "name": "Работа с HTTP",
-        "is_completed": false
-      },
-      {
-        "name": "Конкурентность",
-        "is_completed": false
-      },
-      {
-        "name": "Профилирование",
-        "is_completed": false
-      }
+      {"name": "Основы", "is_completed": false},
+      {"name": "Работа с HTTP", "is_completed": false},
+      {"name": "Конкурентность", "is_completed": false},
+      {"name": "Профилирование", "is_completed": false}
     ]
   }
 }

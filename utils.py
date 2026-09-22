@@ -17,5 +17,4 @@ def input_nonempty(prompt: str) -> str:
 
 def input_theme_list(prompt: str) -> list[str]:
     raw_value = input(prompt)
-
     return [name.strip() for name in raw_value.split(",") if name.strip()]

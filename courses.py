@@ -1,68 +1,75 @@
 from typing import Iterator
 
+from models import Course, Progress, Theme, User
+
 
 def add_course(
-    courses: dict[int, dict], name: str, theme_names: list[str]
-) -> int:
-    course_id = max(courses.keys(), default=0) + 1
+    courses: list[Course], name: str, theme_names: list[str]
+) -> Course:
+    course_id = max((course.id for course in courses), default=0) + 1
     themes = [
-        {"name": theme_name, "is_completed": False}
-        for theme_name in theme_names
+        Theme(theme_id=index, name=theme_name)
+        for index, theme_name in enumerate(theme_names, start=1)
     ]
-    courses[course_id] = {"name": name, "themes": themes}
-
-    return course_id
-
-
-def find_courses(
-    courses: dict[int, dict], query: str
-) -> Iterator[tuple[int, dict]]:
-    for course_id, course in courses.items():
-        if query.lower() in course["name"].lower():
-            yield course_id, course
+    course = Course(course_id=course_id, name=name, themes=themes)
+    courses.append(course)
+    return course
 
 
-def find_theme(course: dict, theme_name: str) -> dict | None:
-    for theme in course["themes"]:
-        if theme["name"] == theme_name:
-            return theme
-
-    return None
+def find_courses(courses: list[Course], query: str) -> Iterator[Course]:
+    for course in courses:
+        if query.lower() in course.name.lower():
+            yield course
 
 
-def mark_theme_completed(course: dict, theme_name: str) -> bool:
+def find_theme(course: Course, theme_name: str) -> Theme | None:
+    return course.get_theme(theme_name)
+
+
+def get_or_create_progress(
+    user: User, course: Course, progresses: list[Progress]
+) -> Progress:
+    progress = user.get_progress(course.id)
+    if progress is not None:
+        return progress
+
+    progress_id = max((item.id for item in progresses), default=0) + 1
+    progress = Progress(progress_id, user, course)
+    progresses.append(progress)
+    user.add_progress(progress)
+    return progress
+
+
+def mark_theme_completed(
+    user: User, course: Course, theme_name: str, progresses: list[Progress]
+) -> bool:
     theme = find_theme(course, theme_name)
     if theme is None:
         return False
-
-    theme["is_completed"] = True
-
-    return True
+    progress = get_or_create_progress(user, course, progresses)
+    return progress.mark_theme_completed(theme)
 
 
-def calculate_progress(course: dict) -> float:
-    themes = course["themes"]
-    if not themes:
+def calculate_progress(user: User, course: Course) -> float:
+    progress = user.get_progress(course.id)
+    if progress is None:
         return 0.0
-
-    completed = sum(theme["is_completed"] for theme in themes)
-
-    return completed / len(themes) * 100
+    return progress.calculate_percent()
 
 
 def filter_courses_by_progress(
-    courses: dict[int, dict], min_percent: float
-) -> Iterator[tuple[int, dict]]:
-    for course_id, course in courses.items():
-        if calculate_progress(course) >= min_percent:
-            yield course_id, course
+    courses: list[Course], user: User, min_percent: float
+) -> Iterator[Course]:
+    for course in courses:
+        if calculate_progress(user, course) >= min_percent:
+            yield course
 
 
 def sort_courses_by_progress(
-    courses: dict[int, dict], reverse: bool = False
-) -> list[tuple[int, dict]]:
+    courses: list[Course], user: User, reverse: bool = False
+) -> list[Course]:
     return sorted(
-        courses.items(),
-        key=lambda item: calculate_progress(item[1]),
+        courses,
+        key=lambda course: calculate_progress(user, course),
         reverse=reverse,
     )
