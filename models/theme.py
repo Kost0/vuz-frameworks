@@ -1,16 +1,21 @@
 class Theme:
     """Тема учебного курса."""
 
-    def __init__(self, theme_id: int, name: str) -> None:
+    def __init__(self, theme_id: int, name: str, content: str = "") -> None:
         self.id = theme_id
         self.name = name
+        self.content = content
 
     def __str__(self) -> str:
         return f"{self.id}. {self.name}"
 
     @classmethod
     def from_data(cls, data: dict) -> "Theme":
-        return cls(theme_id=int(data["id"]), name=data["name"])
+        return cls(
+            theme_id=int(data["id"]),
+            name=data["name"],
+            content=data.get("content", ""),
+        )
 
     def to_data(self) -> dict:
-        return {"id": self.id, "name": self.name}
+        return {"id": self.id, "name": self.name, "content": self.content}

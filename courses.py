@@ -26,6 +26,43 @@ def find_theme(course: Course, theme_name: str) -> Theme | None:
     return course.get_theme(theme_name)
 
 
+def find_course_by_id(
+    courses: list[Course], course_id: int
+) -> Course | None:
+    """Найти курс по идентификатору."""
+    for course in courses:
+        if course.id == course_id:
+            return course
+    return None
+
+
+def find_user_by_id(users: list[User], user_id: int) -> User | None:
+    """Найти пользователя по идентификатору."""
+    for user in users:
+        if user.id == user_id:
+            return user
+    return None
+
+
+def find_user_by_name(users: list[User], name: str) -> User | None:
+    """Найти пользователя по имени (без учёта регистра и пробелов)."""
+    wanted = name.strip().casefold()
+    for user in users:
+        if user.name.casefold() == wanted:
+            return user
+    return None
+
+
+def find_progress_by_id(
+    progresses: list[Progress], progress_id: int
+) -> Progress | None:
+    """Найти объект прогресса по идентификатору."""
+    for progress in progresses:
+        if progress.id == progress_id:
+            return progress
+    return None
+
+
 def get_or_create_progress(
     user: User, course: Course, progresses: list[Progress]
 ) -> Progress:

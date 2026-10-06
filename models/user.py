@@ -1,3 +1,9 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .progress import Progress
+
+
 class User:
     """Пользователь системы обучения."""
 
@@ -5,7 +11,7 @@ class User:
         self.id = user_id
         self.name = name
         self.email = email
-        self.progresses = []
+        self.progresses: list["Progress"] = []
 
     def add_progress(self, progress: "Progress") -> None:
         """Добавить объект прогресса пользователя."""

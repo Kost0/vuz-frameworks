@@ -3,5 +3,10 @@
     "id": 1,
     "name": "Студент",
     "email": "student@example.com"
+  },
+  {
+    "id": 2,
+    "name": "Анна",
+    "email": "anna@example.com"
   }
 ]

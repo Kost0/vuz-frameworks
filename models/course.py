@@ -27,6 +27,13 @@ class Course:
                 return theme
         return None
 
+    def get_theme_by_id(self, theme_id: int) -> Theme | None:
+        """Найти тему курса по идентификатору."""
+        for theme in self.themes:
+            if theme.id == theme_id:
+                return theme
+        return None
+
     def calculate_progress(self, completed_theme_ids: Iterable[int]) -> float:
         """Рассчитать процент завершения курса."""
         if not self.themes:

@@ -31,10 +31,7 @@ def save_courses(filename: str, courses: list[Course]) -> None:
     raw_courses = {
         str(course.id): {
             "name": course.name,
-            "themes": [
-                {"name": theme.name, "is_completed": False}
-                for theme in course.themes
-            ],
+            "themes": [theme.to_data() for theme in course.themes],
         }
         for course in courses
     }

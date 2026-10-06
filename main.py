@@ -7,7 +7,7 @@ from courses import (
     mark_theme_completed,
     sort_courses_by_progress,
 )
-from models import Course, Progress, User
+from models import Course, User
 from storage import (
     load_courses,
     load_progresses,
@@ -58,6 +58,8 @@ def show_theme(course: Course, user: User, theme_name: str) -> None:
     status = "пройдена" if completed else "не пройдена"
     print(f"Курс: {course.name}")
     print(f"Тема: {theme.name}")
+    if theme.content:
+        print(f"Текст: {theme.content}")
     print(f"Статус: {status}")
 
 
